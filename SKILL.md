@@ -1,24 +1,24 @@
 ---
 name: claw-job-sniper
-description: Autonomous job discovery and semantic portfolio matching. Finds jobs, ranks them against local project documentation, and drafts personalized outreach.
+description: Universal autonomous job discovery and semantic portfolio matching. Scans configured feeds, ranks them against your history via memory_search, and drafts personalized outreach.
 ---
 
 # Claw Job Sniper 🎯
 
-This skill allows the agent to find jobs and match them against the user's local portfolio.
+A universal OpenClaw skill for autonomous job hunting. It uses your `USER.md` and `MEMORY.md` to find the perfect "Vibe Match".
+
+## Configuration
+
+Modify `config.json` to add RSS feeds, keywords, and automation thresholds.
 
 ## Commands
 
-- `!sniper run`: Scans job feeds (Berlin Startup Jobs), calculates "Vibe-Match" scores using QMD, and updates the local dashboard.
-- `!sniper draft <job-id>`: Generates a personalized outreach pitch for a specific job from the database.
+- `!sniper run`: Scans configured sources, calculates match scores, and updates the local dashboard.
+- `!sniper draft <id>`: Manually generates an outreach pitch for a specific job.
+- `!sniper serve`: Launches the visual dashboard at `localhost:3000`.
 
-## Workflow
-
-1.  **Scout:** Fetches latest jobs from configured RSS/JSON feeds.
-2.  **Match:** Uses QMD to query the `job-sniper-knowledge` collection.
-3.  **Report:** Categorizes matches into Good/Mid/Low tiers.
-4.  **Draft:** Spawns a high-fidelity writing turn for specific roles.
-
-## Integration
-
-The skill uses a local SQLite database at `data/sniper.db` and a Bun-based dashboard at `localhost:3000`.
+## Universal Features
+- **RSS Engine:** Add any job board feed (Berlin Startup Jobs, LinkedIn RSS, etc.).
+- **Memory Matching:** Uses OpenClaw native `memory_search` to find alignment with your projects.
+- **Auto-Outreach:** Automatically drafts and sends high-fidelity pitches to Telegram for matches >85%.
+- **Zero Absolute Paths:** Works on any machine with OpenClaw.

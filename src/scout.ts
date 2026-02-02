@@ -1,52 +1,76 @@
 import { initDB, saveJob } from "./db";
+import * as fs from "fs";
 
-async function fetchBSJ() {
-  console.log("🔍 Scouting Berlin Startup Jobs...");
-  const feedUrl = "https://berlinstartupjobs.com/feed/";
-  const response = await fetch(feedUrl);
-  const xml = await response.text();
-  
-  const jobs: any[] = [];
-  // Simple XML parsing using regex for the items (to keep it zero-dep)
-  const items = xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
-  
-  for (const item of items) {
-    const titleMatch = item.match(/<title>(.*?)<\/title>/);
-    const linkMatch = item.match(/<link>(.*?)<\/link>/);
-    const pubDateMatch = item.match(/<pubDate>(.*?)<\/pubDate>/);
-    const descriptionMatch = item.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/);
+async function fetchRSS(source: { name: string, url: string }) {
+  console.log(`🔍 Scouting ${source.name}...`);
+  try {
+    const response = await fetch(source.url);
+    const xml = await response.text();
     
-    if (titleMatch && linkMatch) {
-      // Format is usually "Role // Company"
-      const fullTitle = titleMatch[1].replace("&#8211;", "-").replace("&#8217;", "'");
-      const [title, company] = fullTitle.split(" // ");
+    const jobs: any[] = [];
+    const items = xml.match(/<item>([\s\S]*?)<\/item>/g) || [];
+    
+    for (const item of items) {
+      const titleMatch = item.match(/<title>(.*?)<\/title>/);
+      const linkMatch = item.match(/<link>(.*?)<\/link>/);
+      const descriptionMatch = item.match(/<description>([\s\S]*?)<\/description>/);
       
-      jobs.push({
-        external_id: linkMatch[1],
-        title: title || fullTitle,
-        company: company || "Unknown",
-        description: descriptionMatch ? descriptionMatch[1].replace(/<[^>]*>?/gm, '').trim() : "",
-        url: linkMatch[1],
-        source: "Berlin Startup Jobs",
-        location: "Berlin"
-      });
+      if (titleMatch && linkMatch) {
+        let fullTitle = titleMatch[1].replace("<![CDATA[", "").replace("]]>", "").trim();
+        fullTitle = fullTitle.replace(/&#(\d+);/g, (match, dec) => String.fromCharCode(dec));
+        
+        let title = fullTitle;
+        let company = "Unknown";
+        
+        if (fullTitle.includes(" // ")) {
+          [title, company] = fullTitle.split(" // ");
+        } else if (fullTitle.includes(" at ")) {
+           [title, company] = fullTitle.split(" at ");
+        }
+
+        let description = descriptionMatch ? descriptionMatch[1].replace("<![CDATA[", "").replace("]]>", "").trim() : "";
+        description = description.replace(/<[^>]*>?/gm, '');
+
+        jobs.push({
+          external_id: linkMatch[1].replace("<![CDATA[", "").replace("]]>", "").trim(),
+          title: title.trim(),
+          company: company.trim(),
+          description: description,
+          url: linkMatch[1].replace("<![CDATA[", "").replace("]]>", "").trim(),
+          source: source.name,
+          location: "Unknown" // Could be parsed from title/description
+        });
+      }
+    }
+    return jobs;
+  } catch (e) {
+    console.error(`❌ Error fetching ${source.name}:`, e);
+    return [];
+  }
+}
+
+export async function runScout() {
+  const db = initDB();
+  const config = JSON.parse(fs.readFileSync("config.json", "utf8"));
+  
+  let totalFound = 0;
+  let totalNew = 0;
+
+  for (const source of config.sources) {
+    if (source.type === "rss") {
+      const jobs = await fetchRSS(source);
+      totalFound += jobs.length;
+      for (const job of jobs) {
+        const result = saveJob(db, job);
+        if (result.changes > 0) totalNew++;
+      }
     }
   }
   
-  return jobs;
+  console.log(`✅ Scout complete. Found ${totalFound} jobs total, ${totalNew} are new.`);
+  return { totalFound, totalNew };
 }
 
-async function runScout() {
-  const db = initDB();
-  const bsjJobs = await fetchBSJ();
-  
-  let newCount = 0;
-  for (const job of bsjJobs) {
-    const result = saveJob(db, job);
-    if (result.changes > 0) newCount++;
-  }
-  
-  console.log(`✅ Scout complete. Found ${bsjJobs.length} jobs, ${newCount} are new.`);
+if (import.meta.main) {
+  runScout().catch(console.error);
 }
-
-runScout().catch(console.error);

@@ -1,49 +1,45 @@
-# Claw Job Sniper 🦞🎯
+# Claw Job Sniper 🎯
 
-**The Universal Agentic Job Discovery Engine**
+Universal autonomous job discovery and semantic portfolio matching for OpenClaw.
 
-Claw Job Sniper is a high-fidelity, autonomous career engine built on [OpenClaw](https://openclaw.ai). It moves beyond simple job tracking by using local semantic search to find the perfect match between your unique "Proof of Work" and new opportunities.
+## 🌌 Overview
+Claw Job Sniper is a high-fidelity automation skill designed to hunt for jobs while you sleep. It doesn't just "search" for keywords; it uses **Semantic Vibe Matching** to align job descriptions with your personal project history, design philosophy, and career goals.
 
-## 🧠 Why Claw Job Sniper?
+## 🚀 Features
+- **Modular RSS Engine:** Scrape any job board feed (Berlin Startup Jobs, LinkedIn, etc.) by updating a simple JSON config.
+- **Native Memory Search:** Integrates directly with OpenClaw's `MEMORY.md` and `USER.md` to calculate "Vibe Match" scores.
+- **Autonomous Outbound:** Scheduled scans that automatically draft personalized outreach pitches for high-confidence matches.
+- **Portable Dashboard:** A lightweight local server (`localhost:3000`) to visualize matches and trigger manual drafts.
+- **Privacy First:** User profiles and project data are abstracted—no personal data is stored in the repository.
 
-1.  **Vibe-Matched Discovery:** It doesn't just search for keywords. It uses **QMD** (Local Semantic Search) to rank your portfolio projects against job descriptions.
-2.  **Autonomous Outreach:** Automatically drafts personalized pitches that highlight your specific, relevant experience for every role.
-3.  **Local & Private:** No cloud uploads. Your data, your projects, and your CV stay on your machine.
-4.  **Modern Aesthetics:** Features a clean, high-fidelity local dashboard to visualize your career funnel.
+## 🛠️ Installation
+1. Clone the repository into your OpenClaw workspace.
+2. Run `bun install`.
+3. Configure your sources and keywords in `config.json`.
+4. Register the skill in your OpenClaw environment.
 
-## 🚀 Quick Start
+## 📝 Commands
+- `!sniper run`: Fetches new jobs and performs initial keyword/semantic filtering.
+- `!sniper draft <id>`: Generates a high-fidelity outreach draft for a specific job.
+- `!sniper serve`: Launches the visual dashboard.
 
-### 1. Install Dependencies
-```bash
-git clone https://github.com/DerinBarutcu/claw-job-sniper
-cd claw-job-sniper
-./setup.sh
+## ⚙️ Configuration (`config.json`)
+```json
+{
+  "search": {
+    "include_keywords": ["AI", "Design", "Frontend"],
+    "exclude_keywords": ["Senior", "Lead"],
+    "min_match_threshold": 30
+  },
+  "sources": [
+    { "name": "Berlin Startup Jobs", "url": "https://berlinstartupjobs.com/feed/", "type": "rss" }
+  ],
+  "automation": {
+    "auto_draft_threshold": 85,
+    "telegram_notifications": true
+  }
+}
 ```
-
-### 2. Add Your Knowledge
-Drop your CV and project descriptions (in Markdown) into the `my-knowledge/` directory.
-
-### 3. Generate Embeddings
-```bash
-qmd embed
-```
-
-### 4. Run the Sniper
-```bash
-bun index.ts run
-```
-
-### 5. Launch the Dashboard
-```bash
-bun index.ts serve
-```
-Visit `http://localhost:3000` to view your matches.
-
-## 🏗️ Technical Architecture
-*   **Orchestrator:** OpenClaw
-*   **Semantic Engine:** QMD (Query Markup Documents)
-*   **Runtime:** Bun / TypeScript
-*   **Database:** SQLite
 
 ---
-Built by [Derin Barutçu](https://derinb.vercel.app) with **Vibe Code** principles. 🌌
+*Created by Kaira for Derin — 2026*
