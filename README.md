@@ -1,45 +1,34 @@
 # Claw Job Sniper 🎯
 
-Universal autonomous job discovery and semantic portfolio matching for OpenClaw.
+A straightforward job discovery and matching tool for OpenClaw. It scans job feeds and identifies opportunities that match your professional profile.
 
-## 🌌 Overview
-Claw Job Sniper is a high-fidelity automation skill designed to hunt for jobs while you sleep. It doesn't just "search" for keywords; it uses **Semantic Vibe Matching** to align job descriptions with your personal project history, design philosophy, and career goals.
+## 🚀 Core Features
+- **Profile-Based Matching:** Uses `profile/cv.md` as the ground truth for job relevance.
+- **Scout & Rank:** Aggregates listings from RSS feeds and scores them based on your tech stack and experience level.
+- **Job Digest:** View your top matches with a simple command.
+- **Persistence:** Remembers blacklisted companies and roles to keep your feed clean.
+- **Automation:** Can be scheduled to scout jobs in the background and notify you via Telegram.
 
-## 🚀 Features
-- **Modular RSS Engine:** Scrape any job board feed (Berlin Startup Jobs, LinkedIn, etc.) by updating a simple JSON config.
-- **Native Memory Search:** Integrates directly with OpenClaw's `MEMORY.md` and `USER.md` to calculate "Vibe Match" scores.
-- **Autonomous Outbound:** Scheduled scans that automatically draft personalized outreach pitches for high-confidence matches.
-- **Portable Dashboard:** A lightweight local server (`localhost:3000`) to visualize matches and trigger manual drafts.
-- **Privacy First:** User profiles and project data are abstracted—no personal data is stored in the repository.
+## 🛠️ Usage
 
-## 🛠️ Installation
-1. Clone the repository into your OpenClaw workspace.
-2. Run `bun install`.
-3. Configure your sources and keywords in `config.json`.
-4. Register the skill in your OpenClaw environment.
+### 1. Setup Your Profile
+Edit `profile/cv.md` with your latest experience and skills. This is what the tool uses to find matches.
 
-## 📝 Commands
-- `!sniper run`: Fetches new jobs and performs initial keyword/semantic filtering.
-- `!sniper draft <id>`: Generates a high-fidelity outreach draft for a specific job.
-- `!sniper serve`: Launches the visual dashboard.
+### 2. Configure Sources
+Add your target job feeds to `config.json`.
 
-## ⚙️ Configuration (`config.json`)
-```json
-{
-  "search": {
-    "include_keywords": ["AI", "Design", "Frontend"],
-    "exclude_keywords": ["Senior", "Lead"],
-    "min_match_threshold": 30
-  },
-  "sources": [
-    { "name": "Berlin Startup Jobs", "url": "https://berlinstartupjobs.com/feed/", "type": "rss" }
-  ],
-  "automation": {
-    "auto_draft_threshold": 85,
-    "telegram_notifications": true
-  }
-}
-```
+### 3. Commands
+- `!sniper run`: Fetch new jobs and update match scores.
+- `!sniper digest`: Show the top 5 current job matches.
+- `!sniper draft <id>`: Generate a draft outreach email for a job.
+- `!sniper blacklist <company>`: Permanently hide jobs from a specific company.
+- `!sniper serve`: Open the local web dashboard.
+
+## ⚙️ How it Works
+1. **Scout:** Fetches new listings from configured sources.
+2. **Filter:** Removes jobs from blacklisted companies or containing "Senior/Lead" keywords.
+3. **Rank:** Compares the job description against your `cv.md` and `config.json` keywords.
+4. **Present:** Updates the database and alerts you to high-quality matches.
 
 ---
 *Created by Kaira for Derin — 2026*

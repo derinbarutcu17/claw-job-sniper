@@ -1,24 +1,24 @@
 ---
 name: claw-job-sniper
-description: Universal autonomous job discovery and semantic portfolio matching. Scans configured feeds, ranks them against your history via memory_search, and drafts personalized outreach.
+description: CV-based job discovery tool. Scans feeds, ranks them against profile/cv.md, and manages a blacklist of companies.
 ---
 
 # Claw Job Sniper 🎯
 
-A universal OpenClaw skill for autonomous job hunting. It uses your `USER.md` and `MEMORY.md` to find the perfect "Vibe Match".
-
-## Configuration
-
-Modify `config.json` to add RSS feeds, keywords, and automation thresholds.
+A utility for autonomous job hunting based on a local CV.
 
 ## Commands
 
-- `!sniper run`: Scans configured sources, calculates match scores, and updates the local dashboard.
-- `!sniper draft <id>`: Manually generates an outreach pitch for a specific job.
-- `!sniper serve`: Launches the visual dashboard at `localhost:3000`.
+- `!sniper run`: Scans configured sources and ranks jobs against `profile/cv.md`.
+- `!sniper digest`: Shows a list of the top 5 job matches.
+- `!sniper draft <id>`: Generates a personalized outreach pitch for a specific job.
+- `!sniper blacklist <company>`: Adds a company to the exclusion list.
+- `!sniper serve`: Launches the dashboard at `localhost:3000`.
 
-## Universal Features
-- **RSS Engine:** Add any job board feed (Berlin Startup Jobs, LinkedIn RSS, etc.).
-- **Memory Matching:** Uses OpenClaw native `memory_search` to find alignment with your projects.
-- **Auto-Outreach:** Automatically drafts and sends high-fidelity pitches to Telegram for matches >85%.
-- **Zero Absolute Paths:** Works on any machine with OpenClaw.
+## Configuration
+
+Modify `config.json` to manage:
+- RSS feeds (`sources`)
+- Keywords (`search`)
+- Blacklisted companies (`blacklist`)
+- Automation thresholds

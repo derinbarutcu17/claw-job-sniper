@@ -13,5 +13,9 @@
   "automation": {
     "auto_draft_threshold": 85,
     "telegram_notifications": true
+  },
+  "blacklist": {
+    "companies": [],
+    "keywords": ["Senior", "Lead", "Principal", "Staff", "Manager", "VP", "Head of"]
   }
 }
