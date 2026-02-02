@@ -167,6 +167,16 @@
             text-decoration: none;
             font-size: 14px;
         }
+
+        .relevant-project-tag {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-top: 8px;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -217,15 +227,16 @@
             const mid = allJobs.filter(j => j.category === 'Mid Match');
             const low = allJobs.filter(j => j.category === 'Low Match');
 
-            stats.innerText = \`\${allJobs.length} Jobs Total | \${good.length} Good | \${mid.length} Mid\`;
+            stats.innerText = `${allJobs.length} Jobs Total | ${good.length} Good | ${mid.length} Mid`;
 
-            const renderCard = (job) => \`
-                <div class="job-card" onclick="openModal(\${job.id})">
-                    <div class="company">\${job.company}</div>
-                    <div class="title">\${job.title}</div>
-                    <div style="font-size: 11px; color: var(--muted)">Source: \${job.source} | Score: \${job.match_score}%</div>
+            const renderCard = (job) => `
+                <div class="job-card" onclick="openModal(${job.id})">
+                    <div class="company">${job.company}</div>
+                    <div class="title">${job.title}</div>
+                    <div class="relevant-project-tag">${job.relevant_projects || "General fit"}</div>
+                    <div style="font-size: 11px; color: var(--muted); margin-top: 8px;">Source: ${job.source} | Score: ${job.match_score}%</div>
                 </div>
-            \`;
+            `;
 
             goodGrid.innerHTML = good.map(renderCard).join('');
             midGrid.innerHTML = mid.map(renderCard).join('');
@@ -237,25 +248,25 @@
             const modal = document.getElementById('modal-overlay');
             const body = document.getElementById('modal-body');
 
-            body.innerHTML = \`
+            body.innerHTML = `
                 <div class="modal-header">
-                    <div class="company">\${job.company}</div>
-                    <h2 class="title" style="font-size: 24px; margin-top: 8px;">\${job.title}</h2>
+                    <div class="company">${job.company}</div>
+                    <h2 class="title" style="font-size: 24px; margin-top: 8px;">${job.title}</h2>
                     <div class="status-badge" style="display:inline-block; border-color: var(--accent); color: var(--accent)">
-                        \${job.category}
+                        ${job.category}
                     </div>
                 </div>
                 
                 <div class="section-title">Discovery Logic</div>
                 <div class="discovery-logic">
-                    \${job.discovery_logic || "Direct crawl from source."}
+                    ${job.discovery_logic || "Direct crawl from source."}
                 </div>
 
                 <div style="margin-top:40px; display:flex; gap:16px; align-items: center;">
-                    <button class="btn-action" onclick="requestDraft(\${job.id})">🎯 Draft a message with OpenClaw</button>
-                    <a href="\${job.url}" target="_blank" class="btn-secondary">View Full Listing</a>
+                    <button class="btn-action" onclick="requestDraft(${job.id})">🎯 Draft a message with OpenClaw</button>
+                    <a href="${job.url}" target="_blank" class="btn-secondary">View Full Listing</a>
                 </div>
-            \`;
+            `;
 
             modal.style.display = 'flex';
         }

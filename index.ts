@@ -47,8 +47,8 @@ async function main() {
   const db = initDB();
 
   if (command === "run") {
-    // Expand research capabilities: Scrape multiple categories
-    const categories = ["", "engineering", "marketing", "sales", "design"];
+    // Expand research capabilities: Scrape multiple categories to hit 30+ jobs
+    const categories = ["", "engineering", "marketing", "sales", "design", "management", "customer-service", "writing", "other"];
     let totalFound = 0;
     let totalNew = 0;
 
