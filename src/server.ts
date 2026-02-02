@@ -4,6 +4,7 @@ import * as fs from "fs";
 import { execSync } from "child_process";
 
 const DB_PATH = "data/sniper.db";
+const OPENCLAW_BIN = "/Users/derin/.npm-global/bin/openclaw";
 
 export function startServer() {
   console.log("🚀 Launching Claw Job Sniper Dashboard at http://localhost:3000");
@@ -15,26 +16,23 @@ export function startServer() {
     async fetch(req) {
       const url = new URL(req.url);
 
-      // API: Get all jobs
       if (url.pathname === "/api/jobs") {
         const jobs = db.query("SELECT * FROM jobs ORDER BY match_score DESC").all();
         return Response.json(jobs);
       }
 
-      // API: Request AI Draft via OpenClaw
       if (url.pathname.startsWith("/api/jobs/") && url.pathname.endsWith("/request-draft")) {
         const parts = url.pathname.split("/");
         const jobId = parts[3];
         try {
           // Send command to the main OpenClaw session
-          execSync(`openclaw sessions send main "!sniper draft ${jobId}"`);
+          execSync(`${OPENCLAW_BIN} sessions send main "!sniper draft ${jobId}"`);
           return Response.json({ success: true, message: "Command sent to OpenClaw." });
         } catch (e) {
-          return Response.json({ success: false, error: "OpenClaw CLI not found or session inactive." }, { status: 500 });
+          return Response.json({ success: false, error: "OpenClaw session inactive or command failed." }, { status: 500 });
         }
       }
 
-      // Serve Dashboard HTML
       if (url.pathname === "/") {
         const html = fs.readFileSync("src/dashboard.html", "utf8");
         return new Response(html, {

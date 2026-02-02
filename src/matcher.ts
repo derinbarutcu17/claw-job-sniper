@@ -14,18 +14,17 @@ export async function calculateMatches(db: Database) {
   for (const job of jobs) {
     const jobText = `${job.title} ${job.company} ${job.description}`.toLowerCase();
     
-    // 1. Discovery Logic: How did we find this?
+    // 1. Discovery Logic: Keyword Match
     const foundKeywords = includeKeywords.filter((kw: string) => jobText.includes(kw.toLowerCase()));
-    const seniorKeywords = excludeKeywords.filter((kw: string) => job.title.toLowerCase().includes(kw.toLowerCase()));
+    const isSenior = excludeKeywords.some((kw: string) => job.title.toLowerCase().includes(kw.toLowerCase()));
     
     let discoveryLogic = `Source: ${job.source}. `;
     if (foundKeywords.length > 0) {
-      discoveryLogic += `Found match for: ${foundKeywords.join(', ')}. `;
+      discoveryLogic += `Keywords found: ${foundKeywords.join(', ')}. `;
     }
 
     try {
-      // 2. Semantic Search (Broadened)
-      // We query your portfolio for the most relevant project
+      // 2. Semantic Search (Optimized for local collection)
       const cmd = `/Users/derin/.bun/bin/qmd search "${job.title.replace(/"/g, "'")}" -c job-sniper-knowledge --json -n 1`;
       let qmdRaw = "";
       try {
@@ -40,21 +39,24 @@ export async function calculateMatches(db: Database) {
       if (qmdRaw.startsWith("[") && !qmdRaw.includes("No results found")) {
         const results = JSON.parse(qmdRaw);
         if (results.length > 0) {
-          matchScore = Math.min(100, Math.round(results[0].score * 100));
+          // Normalizing QMD BM25 scores: 0.2+ is strong for these short project docs
+          matchScore = Math.min(100, Math.round(results[0].score * 400));
           relevantProjects = results[0].file.split('/').pop();
-          discoveryLogic += `Aligned with ${relevantProjects} (${matchScore}% semantic fit). `;
+          discoveryLogic += `Strong semantic alignment with ${relevantProjects} (${matchScore}% match). `;
         }
       } else {
-        discoveryLogic += "Broad fit based on general CV keywords. ";
+        discoveryLogic += "Broad fit based on general profile keywords. ";
       }
 
       // 3. Simple Tiered Categorization
       let category = "Low Match";
-      if (foundKeywords.length >= 3 || matchScore >= 40) {
+      if ((foundKeywords.length >= 2 && !isSenior) || matchScore >= 70) {
         category = "Good Match";
-      } else if (foundKeywords.length >= 1 || matchScore >= 20) {
+      } else if (foundKeywords.length >= 1 || matchScore >= 30) {
         category = "Mid Match";
       }
+
+      if (isSenior) category = "Mid Match (Senior Role)";
 
       // Update Database
       db.run(`
