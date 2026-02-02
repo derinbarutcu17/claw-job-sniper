@@ -1,63 +1,78 @@
 import { execSync } from "child_process";
 import { Database } from "bun:sqlite";
+import * as fs from "fs";
 
 export async function calculateMatches(db: Database) {
   console.log("🧠 Calculating Vibe-Match scores...");
   
+  // Load User Configuration
+  const config = JSON.parse(fs.readFileSync("config.json", "utf8"));
+  const includeKeywords = config.search.include_keywords;
+  const excludeKeywords = config.search.exclude_keywords;
+
   const jobs = db.query("SELECT * FROM jobs WHERE status = 'new' OR status = 'no_match'").all() as any[];
   
   for (const job of jobs) {
-    const jobQuery = `${job.title} ${job.company}`.replace(/"/g, "'");
+    const jobText = `${job.title} ${job.company} ${job.description}`.toLowerCase();
     
+    // 1. Initial Logic: Keyword Analysis
+    const hits = includeKeywords.filter((kw: string) => jobText.includes(kw.toLowerCase()));
+    const isSenior = excludeKeywords.some((kw: string) => job.title.toLowerCase().includes(kw.toLowerCase()));
+    
+    let discoveryLogic = `Scanned via ${job.source}. `;
+    if (hits.length > 0) {
+      discoveryLogic += `Found relevant keywords: ${hits.join(', ')}. `;
+    }
+    if (isSenior) {
+      discoveryLogic += `Note: Marked as Senior/Lead level. `;
+    }
+
     try {
-      // Priority 1: Specific Collection Search
-      let cmd = `/Users/derin/.bun/bin/qmd search "${jobQuery}" -c sniper-knowledge --json -n 3`;
-      let qmdRaw = execSync(cmd).toString().trim();
+      // 2. Semantic Search via QMD
+      let cmd = `/Users/derin/.bun/bin/qmd search "${job.title.replace(/"/g, "'")}" --json -n 2`;
+      let qmdRaw = "";
+      try {
+        qmdRaw = execSync(cmd).toString().trim();
+      } catch (e) {
+        qmdRaw = "No results found";
+      }
       
-      // Priority 2: Generic Title Keywords
-      if (qmdRaw.includes("No results found") || !qmdRaw.startsWith("[")) {
-        const keywords = job.title.split(' ').filter((w: string) => w.length > 3).slice(0, 2).join(' ');
-        if (keywords) {
-          cmd = `/Users/derin/.bun/bin/qmd search "${keywords}" -c sniper-knowledge --json -n 3`;
-          qmdRaw = execSync(cmd).toString().trim();
+      let matchScore = 0;
+      let relevantProjects = "None found in local base.";
+      
+      if (!qmdRaw.includes("No results found") && qmdRaw.startsWith("[")) {
+        const results = JSON.parse(qmdRaw);
+        if (results.length > 0) {
+          matchScore = Math.min(100, Math.round(results[0].score * 100));
+          relevantProjects = results.map((r: any) => (r.file || "").split('/').pop()).join(", ");
+          discoveryLogic += `Semantic match with ${relevantProjects} (Quality: ${matchScore}%). `;
         }
       }
 
-      // Priority 3: Global Workspace Search (Wide casting)
-      if (qmdRaw.includes("No results found") || !qmdRaw.startsWith("[")) {
-        cmd = `/Users/derin/.bun/bin/qmd search "${job.title.split(' ')[0]}" --json -n 3`;
-        qmdRaw = execSync(cmd).toString().trim();
+      // 3. Categorization
+      let category = "Low Match";
+      if (matchScore >= 60 || (hits.length >= 3 && !isSenior)) {
+        category = "Good Match";
+      } else if (matchScore >= 30 || hits.length >= 1) {
+        category = "Mid Match";
       }
 
-      if (qmdRaw.includes("No results found") || !qmdRaw.startsWith("[")) {
-        db.run("UPDATE jobs SET status = 'no_match' WHERE id = ?", [job.id]);
-        continue;
-      }
-
-      const results = JSON.parse(qmdRaw);
-      updateJobMatch(db, job, results);
+      // 4. Update Database
+      db.run(`
+        UPDATE jobs 
+        SET match_score = ?, 
+            relevant_projects = ?, 
+            category = ?,
+            discovery_logic = ?,
+            status = 'analyzed'
+        WHERE id = ?
+      `, [matchScore, relevantProjects, category, discoveryLogic, job.id]);
+      
+      console.log(`🎯 [${category}] ${job.title} at ${job.company}`);
       
     } catch (e) {
       console.error(`❌ Match error for job ${job.id}:`, e);
       db.run("UPDATE jobs SET status = 'error' WHERE id = ?", [job.id]);
     }
-  }
-}
-
-function updateJobMatch(db: Database, job: any, results: any[]) {
-  if (results && results.length > 0) {
-    const topResult = results[0];
-    const matchScore = Math.min(100, Math.round(topResult.score * 100));
-    const relevantProjects = results.map((r: any) => (r.file || "").split('/').pop()).join(", ");
-    
-    db.run(`
-      UPDATE jobs 
-      SET match_score = ?, 
-          relevant_projects = ?, 
-          status = 'analyzed'
-      WHERE id = ?
-    `, [matchScore, relevantProjects, job.id]);
-    
-    console.log(`🎯 Match found: ${job.title} at ${job.company} - Score: ${matchScore}%`);
   }
 }

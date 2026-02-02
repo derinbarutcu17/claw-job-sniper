@@ -5,7 +5,6 @@ const DB_PATH = "data/sniper.db";
 export function initDB() {
   const db = new Database(DB_PATH);
   
-  // Create jobs table
   db.run(`
     CREATE TABLE IF NOT EXISTS jobs (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,9 +17,11 @@ export function initDB() {
       url TEXT,
       source TEXT,
       status TEXT DEFAULT 'new',
+      category TEXT DEFAULT 'Low Match',
       match_score INTEGER DEFAULT 0,
       match_rationale TEXT,
       relevant_projects TEXT,
+      discovery_logic TEXT,
       outreach_draft TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
