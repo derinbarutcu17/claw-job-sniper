@@ -5,7 +5,6 @@ import * as fs from "fs";
 export async function calculateMatches(db: Database) {
   console.log("🧠 Calculating Vibe-Match scores...");
   
-  // Load User Configuration
   const config = JSON.parse(fs.readFileSync("config.json", "utf8"));
   const includeKeywords = config.search.include_keywords;
   const excludeKeywords = config.search.exclude_keywords;
@@ -15,7 +14,6 @@ export async function calculateMatches(db: Database) {
   for (const job of jobs) {
     const jobText = `${job.title} ${job.company} ${job.description}`.toLowerCase();
     
-    // 1. Initial Logic: Keyword Analysis
     const hits = includeKeywords.filter((kw: string) => jobText.includes(kw.toLowerCase()));
     const isSenior = excludeKeywords.some((kw: string) => job.title.toLowerCase().includes(kw.toLowerCase()));
     
@@ -28,8 +26,8 @@ export async function calculateMatches(db: Database) {
     }
 
     try {
-      // 2. Semantic Search via QMD
-      let cmd = `/Users/derin/.bun/bin/qmd search "${job.title.replace(/"/g, "'")}" --json -n 2`;
+      // Semantic Search via QMD in the job-sniper-knowledge collection
+      let cmd = `/Users/derin/.bun/bin/qmd search "${job.title.replace(/"/g, "'")}" -c job-sniper-knowledge --json -n 2`;
       let qmdRaw = "";
       try {
         qmdRaw = execSync(cmd).toString().trim();
@@ -49,7 +47,6 @@ export async function calculateMatches(db: Database) {
         }
       }
 
-      // 3. Categorization
       let category = "Low Match";
       if (matchScore >= 60 || (hits.length >= 3 && !isSenior)) {
         category = "Good Match";
@@ -57,7 +54,6 @@ export async function calculateMatches(db: Database) {
         category = "Mid Match";
       }
 
-      // 4. Update Database
       db.run(`
         UPDATE jobs 
         SET match_score = ?, 

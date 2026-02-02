@@ -1,22 +1,22 @@
-# Claw-Sniper 🦞🎯
+# Claw Job Sniper 🦞🎯
 
 **The Universal Agentic Job Discovery Engine**
 
-Claw-Sniper is a high-fidelity, autonomous career engine built on [OpenClaw](https://openclaw.ai). It moves beyond simple job tracking by using local semantic search to find the perfect match between your unique "Proof of Work" and new opportunities.
+Claw Job Sniper is a high-fidelity, autonomous career engine built on [OpenClaw](https://openclaw.ai). It moves beyond simple job tracking by using local semantic search to find the perfect match between your unique "Proof of Work" and new opportunities.
 
-## 🧠 Why Claw-Sniper?
+## 🧠 Why Claw Job Sniper?
 
 1.  **Vibe-Matched Discovery:** It doesn't just search for keywords. It uses **QMD** (Local Semantic Search) to rank your portfolio projects against job descriptions.
 2.  **Autonomous Outreach:** Automatically drafts personalized pitches that highlight your specific, relevant experience for every role.
 3.  **Local & Private:** No cloud uploads. Your data, your projects, and your CV stay on your machine.
-4.  **Premium Aesthetics:** Features a high-fidelity local dashboard built with the **Liquid Glass Engine**.
+4.  **Modern Aesthetics:** Features a clean, high-fidelity local dashboard to visualize your career funnel.
 
 ## 🚀 Quick Start
 
 ### 1. Install Dependencies
 ```bash
-git clone https://github.com/DerinBarutcu/claw-sniper
-cd claw-sniper
+git clone https://github.com/DerinBarutcu/claw-job-sniper
+cd claw-job-sniper
 ./setup.sh
 ```
 

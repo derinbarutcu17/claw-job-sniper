@@ -5,7 +5,7 @@ import * as fs from "fs";
 const DB_PATH = "data/sniper.db";
 
 export function startServer() {
-  console.log("🚀 Launching Claw-Sniper Dashboard at http://localhost:3000");
+  console.log("🚀 Launching Claw Job Sniper Dashboard at http://localhost:3000");
   
   const db = new Database(DB_PATH);
 

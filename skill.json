@@ -1,5 +1,5 @@
 {
-  "name": "claw-sniper",
+  "name": "claw-job-sniper",
   "description": "Autonomous job discovery and semantic portfolio matching. Finds jobs, ranks them against local project documentation, and drafts personalized outreach.",
   "version": "0.1.0",
   "commands": [

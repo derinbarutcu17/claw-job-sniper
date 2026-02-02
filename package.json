@@ -1,5 +1,5 @@
 {
-  "name": "claw-sniper",
+  "name": "claw-job-sniper",
   "module": "index.ts",
   "type": "module",
   "private": true,

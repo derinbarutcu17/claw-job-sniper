@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Claw-Sniper: Standardized Setup Script
+# Claw Job Sniper: Standardized Setup Script
 # Description: Installs all dependencies for the Agentic Job Discovery Engine.
 
 set -e
 
-echo "🚀 Starting Claw-Sniper Setup..."
+echo "🚀 Starting Claw Job Sniper Setup..."
 
 # 1. Check for Bun
 if ! command -v bun &> /dev/null; then
@@ -43,7 +43,7 @@ mkdir -p my-knowledge
 # Add the collection to QMD
 # Note: Use absolute path if possible, but for a public repo, 
 # we'll use a relative path based on the current directory.
-qmd collection add ./my-knowledge --name sniper-knowledge
+qmd collection add ./my-knowledge --name job-sniper-knowledge
 
 echo "----------------------------------------------------"
 echo "✅ Setup Complete!"
