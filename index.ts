@@ -25,6 +25,16 @@ async function fetchBSJ() {
     
     if (titleMatch && linkMatch) {
       const fullTitle = titleMatch[1].replace("&#8211;", "-").replace("&#8217;", "'").replace("&#038;", "&");
+      
+      // Step 2: Level-Gated Scouting (Skip Senior/Lead roles)
+      const seniorKeywords = ["senior", "lead", "staff", "principal", "expert", "head of", "cto", "vp"];
+      const isSenior = seniorKeywords.some(kw => fullTitle.toLowerCase().includes(kw));
+      
+      if (isSenior) {
+        console.log(`⏭️ Skipping Senior role: ${fullTitle}`);
+        continue;
+      }
+
       const [title, company] = fullTitle.split(" // ");
       
       jobs.push({

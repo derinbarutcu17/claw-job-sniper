@@ -11,26 +11,29 @@ export async function calculateMatches(db: Database) {
     const jobQuery = `${job.title} ${job.company}`.replace(/"/g, "'");
     
     try {
-      // Using 'search' (lexical) for Phase 3 demo to avoid high model loading latency.
-      // In Phase 5, we will upgrade this to a persistent MCP connection or batch vector search.
+      // Use lexical search for core project matching
       const cmd = `/Users/derin/.bun/bin/qmd search "${jobQuery}" -c sniper-knowledge --json -n 3`;
       const qmdRaw = execSync(cmd).toString().trim();
       
-      if (qmdRaw.startsWith("No results found")) {
-        // Fallback search with just the title words
-        const fallbackCmd = `/Users/derin/.bun/bin/qmd search "${job.title.split(' ')[0]}" -c sniper-knowledge --json -n 3`;
-        const qmdFallback = execSync(fallbackCmd).toString().trim();
-        if (qmdFallback.startsWith("No results found")) {
-          db.run("UPDATE jobs SET status = 'no_match' WHERE id = ?", [job.id]);
-          continue;
+      if (qmdRaw.includes("No results found") || !qmdRaw.startsWith("[")) {
+        // Fallback: search with just job title keywords
+        const keywords = job.title.split(' ').filter((w: string) => w.length > 3).join(' ');
+        if (keywords) {
+          const fallbackCmd = `/Users/derin/.bun/bin/qmd search "${keywords}" -c sniper-knowledge --json -n 3`;
+          const fallbackRaw = execSync(fallbackCmd).toString().trim();
+          if (!fallbackRaw.includes("No results found") && fallbackRaw.startsWith("[")) {
+            const results = JSON.parse(fallbackRaw);
+            updateJobMatch(db, job, results);
+            continue;
+          }
         }
-        // Use fallback results
-        const results = JSON.parse(qmdFallback);
-        processResults(db, job, results);
-      } else {
-        const results = JSON.parse(qmdRaw);
-        processResults(db, job, results);
+        db.run("UPDATE jobs SET status = 'no_match' WHERE id = ?", [job.id]);
+        continue;
       }
+
+      const results = JSON.parse(qmdRaw);
+      updateJobMatch(db, job, results);
+      
     } catch (e) {
       console.error(`❌ Match error for job ${job.id}:`, e);
       db.run("UPDATE jobs SET status = 'error' WHERE id = ?", [job.id]);
@@ -38,7 +41,7 @@ export async function calculateMatches(db: Database) {
   }
 }
 
-function processResults(db: Database, job: any, results: any[]) {
+function updateJobMatch(db: Database, job: any, results: any[]) {
   if (results && results.length > 0) {
     const topResult = results[0];
     const matchScore = Math.min(100, Math.round(topResult.score * 100));

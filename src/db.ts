@@ -21,6 +21,7 @@ export function initDB() {
       match_score INTEGER DEFAULT 0,
       match_rationale TEXT,
       relevant_projects TEXT,
+      outreach_draft TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
