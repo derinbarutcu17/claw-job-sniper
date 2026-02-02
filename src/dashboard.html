@@ -84,13 +84,6 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        .card-category {
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-
         .company {
             font-size: 14px;
             color: var(--muted);
@@ -139,18 +132,6 @@
             color: #d1d5db;
         }
 
-        .draft-box {
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            white-space: pre-wrap;
-            color: #f9fafb;
-            margin-top: 20px;
-            font-size: 15px;
-            line-height: 1.6;
-        }
-
         .close-btn {
             position: absolute;
             top: 32px;
@@ -160,23 +141,38 @@
             font-size: 28px;
         }
 
-        .orb {
-            position: fixed;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
-            bottom: -300px;
-            right: -300px;
-            z-index: -1;
-            pointer-events: none;
+        .btn-action {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-action:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: var(--glass);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
         }
     </style>
 </head>
 <body>
-    <div class="orb"></div>
     <header>
         <h1>Claw Job Sniper 🎯</h1>
-        <div id="stats-summary" class="status-badge">Scanning Market...</div>
+        <div id="stats-summary" class="status-badge">System Active</div>
     </header>
 
     <div id="main-content">
@@ -210,19 +206,16 @@
             const goodGrid = document.getElementById('good-grid');
             const midGrid = document.getElementById('mid-grid');
             const lowGrid = document.getElementById('low-grid');
-            const stats = document.getElementById('stats-summary');
 
             const good = allJobs.filter(j => j.category === 'Good Match');
             const mid = allJobs.filter(j => j.category === 'Mid Match');
             const low = allJobs.filter(j => j.category === 'Low Match');
 
-            stats.innerText = `${allJobs.length} Jobs Total | ${good.length} Good | ${mid.length} Mid`;
-
             const renderCard = (job) => `
                 <div class="job-card" onclick="openModal(${job.id})">
                     <div class="company">${job.company}</div>
                     <div class="title">${job.title}</div>
-                    <div style="font-size: 11px; color: var(--muted)">Source: ${job.source}</div>
+                    <div style="font-size: 11px; color: var(--muted)">Source: ${job.source} | Score: ${job.match_score}%</div>
                 </div>
             `;
 
@@ -250,28 +243,39 @@
                     ${job.discovery_logic || "Direct crawl from source."}
                 </div>
 
-                <div class="section-title">AI Outreach Draft</div>
-                <div class="draft-box">${job.outreach_draft || "No draft generated. Run '!sniper draft ${job.id}' to generate."}</div>
-                
-                <div style="margin-top:40px; display:flex; gap:16px;">
-                    <a href="${job.url}" target="_blank" class="status-badge" style="text-decoration:none; background: var(--accent); color: white; border: none;">View Full Listing</a>
-                    <button class="status-badge" onclick="copyDraft('${job.id}')" style="cursor:pointer">Copy Draft</button>
+                <div style="margin-top:40px; display:flex; gap:16px; align-items: center;">
+                    <button class="btn-action" onclick="requestDraft(${job.id})">🎯 Draft with AI Bot</button>
+                    <a href="${job.url}" target="_blank" class="btn-secondary">View Full Listing</a>
                 </div>
             `;
 
             modal.style.display = 'flex';
         }
 
-        function closeModal() {
-            document.getElementById('modal-overlay').style.display = 'none';
+        async function requestDraft(id) {
+            const btn = event.target;
+            btn.innerText = "Sending Command...";
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(\`/api/jobs/\${id}/request-draft\`);
+                const result = await response.json();
+                if (result.success) {
+                    alert("Command sent! Check your OpenClaw chat for the draft.");
+                    btn.innerText = "🎯 Draft Requested";
+                } else {
+                    alert("Error: " + result.error);
+                    btn.innerText = "🎯 Draft with AI Bot";
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                alert("Could not connect to local server.");
+                btn.disabled = false;
+            }
         }
 
-        function copyDraft(id) {
-            const job = allJobs.find(j => j.id == id);
-            if (job.outreach_draft) {
-                navigator.clipboard.writeText(job.outreach_draft);
-                alert("Draft copied to clipboard!");
-            }
+        function closeModal() {
+            document.getElementById('modal-overlay').style.display = 'none';
         }
 
         fetchJobs();

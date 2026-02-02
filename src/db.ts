@@ -22,7 +22,6 @@ export function initDB() {
       match_rationale TEXT,
       relevant_projects TEXT,
       discovery_logic TEXT,
-      outreach_draft TEXT,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
   `);
