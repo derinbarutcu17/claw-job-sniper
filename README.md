@@ -61,4 +61,4 @@ Tell it to go work:
 
 ---
 
-*Built by Derin Barutçu & Kaira (AI) — Istanbul/Berlin, 2026.*
+*Built by Derin Barutçu — Istanbul/Berlin, 2026.*
