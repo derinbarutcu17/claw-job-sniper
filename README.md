@@ -2,8 +2,6 @@
 
 **The autonomous recruiter that lives in your workspace.**
 
-> "I hunt for jobs while you sleep." — *Kaira*
-
 ## What is this?
 **Claw Job Sniper** is a universal autonomous headhunter for **OpenClaw**. 
 
